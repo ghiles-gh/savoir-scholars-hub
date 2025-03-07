@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -16,7 +15,6 @@ const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [isCreatingReport, setIsCreatingReport] = useState(false);
   
-  // Mock data for demonstration
   const recentReports = [
     { id: 1, studentName: 'Sophie Martin', className: 'Mathematics', date: '2023-09-15', status: 'sent' },
     { id: 2, studentName: 'Alexandre Dubois', className: 'Physics', date: '2023-09-14', status: 'draft' },
@@ -31,7 +29,6 @@ const Dashboard = () => {
   ];
   
   useEffect(() => {
-    // Check if user is logged in
     const userData = localStorage.getItem('edutrack_user');
     if (!userData) {
       navigate('/login');
@@ -50,6 +47,10 @@ const Dashboard = () => {
     navigate('/login');
   };
   
+  const handleCreateReport = () => {
+    setIsCreatingReport(true);
+  };
+  
   if (!user) {
     return <div>Loading...</div>;
   }
@@ -59,7 +60,6 @@ const Dashboard = () => {
       <Navbar />
       
       <div className="flex-1 container mx-auto px-4 py-8">
-        {/* Dashboard Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-nobel-navy">Teacher Dashboard</h1>
@@ -77,7 +77,7 @@ const Dashboard = () => {
             </Button>
             
             <Button 
-              onClick={() => setIsCreatingReport(true)}
+              onClick={handleCreateReport}
               className="bg-nobel-blue hover:bg-nobel-blue/90 text-white flex items-center gap-2"
             >
               <Plus size={16} />
@@ -90,9 +90,7 @@ const Dashboard = () => {
           <ReportCreator onClose={() => setIsCreatingReport(false)} />
         ) : (
           <>
-            {/* Main Dashboard Content */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-              {/* Stats Cards */}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg font-medium">Reports Sent</CardTitle>

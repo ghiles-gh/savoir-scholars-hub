@@ -1,239 +1,319 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Eye, EyeOff, Mail, Lock, UserPlus } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { Lock, Mail, UserPlus, LogIn } from "lucide-react";
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Navbar from '@/components/Navbar';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // Form states
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [registerData, setRegisterData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
-
+  const [registerData, setRegisterData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    schoolName: ''
+  });
+  
+  // Check if user is already logged in
+  useEffect(() => {
+    const userData = localStorage.getItem('edutrack_user');
+    if (userData) {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
+  
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLoginData({ ...loginData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setLoginData(prev => ({ ...prev, [name]: value }));
   };
-
+  
   const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRegisterData({ ...registerData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setRegisterData(prev => ({ ...prev, [name]: value }));
   };
-
+  
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login process
-    setTimeout(() => {
+    // Simple validation
+    if (!loginData.email || !loginData.password) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all fields",
+        variant: "destructive"
+      });
       setIsLoading(false);
-      // Mock successful login
-      localStorage.setItem('edutrack_user', JSON.stringify({
-        id: '123',
-        name: 'Test User',
+      return;
+    }
+    
+    // Simulate login delay
+    setTimeout(() => {
+      // For demo purposes - normally would validate with a server
+      const mockUser = {
+        id: '1',
+        name: 'Teacher User',
         email: loginData.email,
         role: 'teacher'
-      }));
+      };
+      
+      localStorage.setItem('edutrack_user', JSON.stringify(mockUser));
       
       toast({
         title: "Login successful",
-        description: "Welcome back to EduTrack!",
+        description: "Welcome back to EduTrack!"
       });
       
       navigate('/dashboard');
+      setIsLoading(false);
     }, 1500);
   };
-
+  
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    
+    // Simple validation
+    if (!registerData.name || !registerData.email || !registerData.password || !registerData.confirmPassword || !registerData.schoolName) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all fields",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
+    }
     
     if (registerData.password !== registerData.confirmPassword) {
       toast({
-        title: "Passwords do not match",
+        title: "Passwords don't match",
         description: "Please make sure your passwords match",
-        variant: "destructive",
+        variant: "destructive"
       });
+      setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
     
-    // Simulate registration process
+    // Simulate registration delay
     setTimeout(() => {
-      setIsLoading(false);
+      // For demo purposes - normally would register with a server
+      const mockUser = {
+        id: '1',
+        name: registerData.name,
+        email: registerData.email,
+        role: 'teacher',
+        schoolName: registerData.schoolName
+      };
+      
+      localStorage.setItem('edutrack_user', JSON.stringify(mockUser));
+      
       toast({
         title: "Registration successful",
-        description: "Your account has been created. You can now log in.",
+        description: "Welcome to EduTrack! Your account has been created."
       });
+      
+      navigate('/dashboard');
+      setIsLoading(false);
     }, 1500);
   };
-
+  
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex-1 flex items-center justify-center p-4 bg-gray-50">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="mt-6 text-3xl font-bold text-nobel-navy">
-              Welcome to EduTrack
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Sign in to continue to your account
-            </p>
+            <h1 className="text-3xl font-bold text-nobel-navy">Welcome to EduTrack</h1>
+            <p className="text-gray-600 mt-2">The complete platform for school-parent communication</p>
           </div>
           
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Login</CardTitle>
-                  <CardDescription>
-                    Enter your credentials to access your account
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-3 text-gray-400">
-                          <Mail size={16} />
-                        </span>
-                        <Input 
-                          id="email"
-                          name="email"
-                          type="email"
-                          placeholder="your@email.com"
-                          required
-                          className="pl-10"
-                          value={loginData.email}
-                          onChange={handleLoginChange}
-                        />
+          <div className="bg-white rounded-lg shadow-md border p-6">
+            <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="register">Register</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <Mail className="h-5 w-5 text-gray-400" />
                       </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        <a href="#" className="text-sm font-medium text-nobel-blue hover:underline">
-                          Forgot password?
-                        </a>
-                      </div>
-                      <div className="relative">
-                        <span className="absolute left-3 top-3 text-gray-400">
-                          <Lock size={16} />
-                        </span>
-                        <Input 
-                          id="password"
-                          name="password"
-                          type="password"
-                          required
-                          className="pl-10"
-                          value={loginData.password}
-                          onChange={handleLoginChange}
-                        />
-                      </div>
-                    </div>
-                    
-                    <Button type="submit" className="w-full bg-nobel-blue hover:bg-nobel-blue/90" disabled={isLoading}>
-                      {isLoading ? (
-                        <>Processing...</>
-                      ) : (
-                        <>
-                          <LogIn className="mr-2 h-4 w-4" /> Login
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="register">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Create an account</CardTitle>
-                  <CardDescription>
-                    Register a new account to access EduTrack
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleRegister} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
                       <Input 
-                        id="name"
-                        name="name"
-                        placeholder="John Doe"
-                        required
-                        value={registerData.name}
-                        onChange={handleRegisterChange}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="reg-email">Email</Label>
-                      <Input 
-                        id="reg-email"
+                        id="email"
                         name="email"
                         type="email"
                         placeholder="your@email.com"
-                        required
-                        value={registerData.email}
-                        onChange={handleRegisterChange}
+                        className="pl-10"
+                        value={loginData.email}
+                        onChange={handleLoginChange}
+                        disabled={isLoading}
                       />
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="reg-password">Password</Label>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <Input 
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className="pl-10 pr-10"
+                        value={loginData.password}
+                        onChange={handleLoginChange}
+                        disabled={isLoading}
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? 
+                          <EyeOff className="h-5 w-5 text-gray-400" /> : 
+                          <Eye className="h-5 w-5 text-gray-400" />
+                        }
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="text-right">
+                    <a href="#" className="text-sm text-nobel-blue hover:underline">
+                      Forgot your password?
+                    </a>
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-nobel-blue hover:bg-nobel-blue/90"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Logging in..." : "Login"}
+                  </Button>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="register">
+                <form onSubmit={handleRegister} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-name">Full Name</Label>
+                    <Input 
+                      id="reg-name"
+                      name="name"
+                      placeholder="Your full name"
+                      value={registerData.name}
+                      onChange={handleRegisterChange}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-email">Email Address</Label>
+                    <Input 
+                      id="reg-email"
+                      name="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={registerData.email}
+                      onChange={handleRegisterChange}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-password">Password</Label>
+                    <div className="relative">
                       <Input 
                         id="reg-password"
                         name="password"
-                        type="password"
-                        required
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Create a password"
+                        className="pr-10"
                         value={registerData.password}
                         onChange={handleRegisterChange}
+                        disabled={isLoading}
                       />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? 
+                          <EyeOff className="h-5 w-5 text-gray-400" /> : 
+                          <Eye className="h-5 w-5 text-gray-400" />
+                        }
+                      </button>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
-                      <Input 
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        type="password"
-                        required
-                        value={registerData.confirmPassword}
-                        onChange={handleRegisterChange}
-                      />
-                    </div>
-                    
-                    <Button type="submit" className="w-full bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90" disabled={isLoading}>
-                      {isLoading ? (
-                        <>Processing...</>
-                      ) : (
-                        <>
-                          <UserPlus className="mr-2 h-4 w-4" /> Create Account
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-confirm-password">Confirm Password</Label>
+                    <Input 
+                      id="reg-confirm-password"
+                      name="confirmPassword"
+                      type="password"
+                      placeholder="Confirm your password"
+                      value={registerData.confirmPassword}
+                      onChange={handleRegisterChange}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-school">School Name</Label>
+                    <Input 
+                      id="reg-school"
+                      name="schoolName"
+                      placeholder="Your school's name"
+                      value={registerData.schoolName}
+                      onChange={handleRegisterChange}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-nobel-blue hover:bg-nobel-blue/90"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Creating Account..." : "Create Account"}
+                  </Button>
+                </form>
+              </TabsContent>
+              
+              <div className="mt-6 text-center text-sm text-gray-500">
+                <p>
+                  By continuing, you agree to EduTrack's
+                  <a href="#" className="text-nobel-blue hover:underline ml-1">Terms of Service</a>
+                  {" and "}
+                  <a href="#" className="text-nobel-blue hover:underline">Privacy Policy</a>.
+                </p>
+              </div>
+            </Tabs>
+          </div>
         </div>
       </div>
       
