@@ -1,13 +1,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogIn } from 'lucide-react';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -21,6 +23,10 @@ const Navbar = () => {
         setIsScrolled(scrollPosition > headerHeight);
       }
     };
+
+    // Check if user is logged in
+    const userData = localStorage.getItem('edutrack_user');
+    setIsLoggedIn(!!userData);
 
     window.addEventListener('scroll', handleScroll);
     return () => {
@@ -75,25 +81,43 @@ const Navbar = () => {
 
           {/* Call to action buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              className={`${
-                isScrolled 
-                  ? 'text-nobel-blue hover:text-nobel-blue/90 hover:bg-nobel-blue/10' 
-                  : 'text-white hover:bg-white/10'
-              }`}
-            >
-              Login
-            </Button>
-            <Button 
-              className={`${
-                isScrolled 
-                  ? 'bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90' 
-                  : 'bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90'
-              }`}
-            >
-              Get Started
-            </Button>
+            {isLoggedIn ? (
+              <Button 
+                onClick={() => navigate('/dashboard')}
+                className={`${
+                  isScrolled 
+                    ? 'bg-nobel-blue text-white hover:bg-nobel-blue/90' 
+                    : 'bg-nobel-blue text-white hover:bg-nobel-blue/90'
+                }`}
+              >
+                Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => navigate('/login')}
+                  className={`${
+                    isScrolled 
+                      ? 'text-nobel-blue hover:text-nobel-blue/90 hover:bg-nobel-blue/10' 
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Button>
+                <Button 
+                  onClick={() => navigate('/login?tab=register')}
+                  className={`${
+                    isScrolled 
+                      ? 'bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90' 
+                      : 'bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90'
+                  }`}
+                >
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -125,12 +149,40 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-2 mt-4">
-                <Button variant="outline" className="w-full justify-center">
-                  Login
-                </Button>
-                <Button className="w-full justify-center bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90">
-                  Get Started
-                </Button>
+                {isLoggedIn ? (
+                  <Button 
+                    onClick={() => {
+                      navigate('/dashboard');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full justify-center bg-nobel-blue text-white hover:bg-nobel-blue/90"
+                  >
+                    Dashboard
+                  </Button>
+                ) : (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-center"
+                      onClick={() => {
+                        navigate('/login');
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Login
+                    </Button>
+                    <Button 
+                      className="w-full justify-center bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90"
+                      onClick={() => {
+                        navigate('/login?tab=register');
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      Get Started
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
