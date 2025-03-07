@@ -1,118 +1,140 @@
 
-import React, { useState, useEffect } from 'react';
-import { cn } from "@/lib/utils";
-import { Menu, X } from "lucide-react";
-
-const navLinks = [
-  { name: 'Home', href: '#home' },
-  { name: 'About', href: '#about' },
-  { name: 'Programs', href: '#programs' },
-  { name: 'Admissions', href: '#admissions' },
-  { name: 'News', href: '#news' },
-  { name: 'Contact', href: '#contact' },
-];
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Menu, X } from 'lucide-react';
 
 const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('');
+  const headerRef = useRef<HTMLDivElement>(null);
 
-  // Handle scroll event for navbar styling
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
+      if (headerRef.current) {
+        const scrollPosition = window.scrollY;
+        const headerHeight = headerRef.current.offsetHeight;
+        setIsScrolled(scrollPosition > headerHeight);
       }
-      
-      // Determine active section based on scroll position
-      const sections = document.querySelectorAll('section[id]');
-      sections.forEach(section => {
-        const sectionTop = section.offsetTop - 100;
-        const sectionHeight = section.offsetHeight;
-        const sectionId = section.getAttribute('id');
-        
-        if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
-          setActiveSection(sectionId || '');
-        }
-      });
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Call once on mount to set initial state
-    
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
+
+  const navItems = [
+    { name: 'Home', link: '#home' },
+    { name: 'Features', link: '#features' },
+    { name: 'How It Works', link: '#how-it-works' },
+    { name: 'Testimonials', link: '#testimonials' },
+    { name: 'Pricing', link: '#pricing' },
+    { name: 'Demo', link: '#demo' },
+  ];
 
   return (
     <header 
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-4 border-b", 
-        isScrolled 
-          ? "bg-white/95 backdrop-blur-md border-gray-200/50 shadow-sm" 
-          : "bg-transparent border-transparent"
-      )}
+      ref={headerRef}
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        isScrolled
+          ? 'bg-white shadow-md py-3'
+          : 'bg-transparent py-5'
+      }`}
     >
-      <div className="container mx-auto px-4 flex items-center justify-between">
-        <a href="#home" className="flex items-center space-x-2">
-          <span className="text-nobel-blue font-bold text-xl md:text-2xl">École du Savoir Nobel</span>
-        </a>
-        
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex space-x-8">
-          {navLinks.map((link) => (
-            <a 
-              key={link.name} 
-              href={link.href}
-              className={cn(
-                "nav-link",
-                activeSection === link.href.substring(1) && "active"
-              )}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-nobel-blue rounded-md flex items-center justify-center">
+                <span className="text-white font-bold text-xl">ET</span>
+              </div>
+              <span className={`font-bold text-2xl ${isScrolled ? 'text-nobel-navy' : 'text-white'}`}>
+                EduTrack
+              </span>
+            </div>
+          </Link>
+
+          {/* Navigation links - desktop */}
+          <nav className="hidden md:flex items-center gap-6">
+            {navItems.map((item) => (
+              <a
+                key={item.name}
+                href={item.link}
+                className={`nav-link ${isScrolled ? 'text-gray-700' : 'text-white'}`}
+              >
+                {item.name}
+              </a>
+            ))}
+          </nav>
+
+          {/* Call to action buttons */}
+          <div className="hidden md:flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              className={`${
+                isScrolled 
+                  ? 'text-nobel-blue hover:text-nobel-blue/90 hover:bg-nobel-blue/10' 
+                  : 'text-white hover:bg-white/10'
+              }`}
             >
-              {link.name}
-            </a>
-          ))}
-        </nav>
-        
-        {/* Mobile Menu Button */}
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden flex items-center text-gray-700 focus:outline-none"
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {mobileMenuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
-        </button>
-      </div>
-      
-      {/* Mobile Navigation */}
-      <div 
-        className={cn(
-          "fixed inset-0 top-[73px] bg-white z-40 transform transition-transform duration-300 ease-in-out md:hidden",
-          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        )}
-      >
-        <div className="flex flex-col space-y-4 p-6 pt-10">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className={cn(
-                "text-lg py-2 border-b border-gray-100",
-                activeSection === link.href.substring(1) 
-                  ? "text-nobel-blue font-medium" 
-                  : "text-gray-600"
-              )}
-              onClick={() => setMobileMenuOpen(false)}
+              Login
+            </Button>
+            <Button 
+              className={`${
+                isScrolled 
+                  ? 'bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90' 
+                  : 'bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90'
+              }`}
             >
-              {link.name}
-            </a>
-          ))}
+              Get Started
+            </Button>
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            className="md:hidden text-nobel-blue"
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? (
+              <X className={`h-6 w-6 ${isScrolled ? 'text-nobel-navy' : 'text-white'}`} />
+            ) : (
+              <Menu className={`h-6 w-6 ${isScrolled ? 'text-nobel-navy' : 'text-white'}`} />
+            )}
+          </button>
         </div>
+
+        {/* Mobile navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden mt-4 pb-4">
+            <nav className="flex flex-col gap-4">
+              {navItems.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.link}
+                  className="text-nobel-navy px-2 py-1 rounded hover:bg-gray-100"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </a>
+              ))}
+              <div className="flex flex-col gap-2 mt-4">
+                <Button variant="outline" className="w-full justify-center">
+                  Login
+                </Button>
+                <Button className="w-full justify-center bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90">
+                  Get Started
+                </Button>
+              </div>
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );

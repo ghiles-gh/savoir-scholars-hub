@@ -2,22 +2,22 @@
 import React, { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
-import AboutSection from '@/components/AboutSection';
-import ProgramsSection from '@/components/ProgramsSection';
-import AdmissionsSection from '@/components/AdmissionsSection';
-import NewsSection from '@/components/NewsSection';
-import ContactSection from '@/components/ContactSection';
+import FeaturesSection from '@/components/FeaturesSection';
+import HowItWorksSection from '@/components/HowItWorksSection';
+import PricingSection from '@/components/PricingSection';
+import TestimonialsSection from '@/components/TestimonialsSection';
+import DemoSection from '@/components/DemoSection';
 import Footer from '@/components/Footer';
 
 const Index = () => {
   // Update page title and meta description for SEO
   useEffect(() => {
-    document.title = "École du Savoir Nobel | Premier Private Education";
+    document.title = "EduTrack | Detailed Reports for Private Schools";
     
     // Update meta description
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'École du Savoir Nobel is a premier private school offering exceptional education through innovative teaching and personalized learning approaches.');
+      metaDescription.setAttribute('content', 'EduTrack is an innovative platform that enables private schools to send detailed reports to parents after each class session, enhancing communication and student progress tracking.');
     }
   }, []);
 
@@ -25,11 +25,11 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
       <HeroSection />
-      <AboutSection />
-      <ProgramsSection />
-      <AdmissionsSection />
-      <NewsSection />
-      <ContactSection />
+      <FeaturesSection />
+      <HowItWorksSection />
+      <TestimonialsSection />
+      <PricingSection />
+      <DemoSection />
       <Footer />
     </div>
   );

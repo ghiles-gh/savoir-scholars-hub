@@ -1,93 +1,55 @@
 
-import React, { useEffect, useState } from 'react';
-import { cn } from "@/lib/utils";
-import { ArrowDown } from 'lucide-react';
+import React from 'react';
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 const HeroSection = () => {
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    setLoaded(true);
-  }, []);
-
   return (
-    <section 
-      id="home" 
-      className="relative min-h-[100vh] w-full flex items-center justify-center bg-nobel-navy overflow-hidden"
-    >
-      {/* Background overlay with gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-nobel-navy/90 to-nobel-blue/80 z-10"></div>
-      
-      {/* Background image */}
-      <div className="absolute inset-0 z-0">
-        <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3')] bg-cover bg-center"></div>
+    <section className="relative bg-gradient-to-br from-nobel-navy to-nobel-blue py-20 md:py-28 overflow-hidden">
+      <div className="absolute inset-0 z-0 opacity-10">
+        <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] bg-repeat"></div>
       </div>
       
-      {/* Content */}
-      <div className="container mx-auto px-4 relative z-20 py-20 mt-16">
-        <div className="max-w-3xl mx-auto text-center">
-          <div 
-            className={cn(
-              "transition-all transform duration-1000 ease-out",
-              loaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-            )}
-          >
-            <span className="inline-block mb-4 px-4 py-1.5 text-sm text-nobel-gold bg-nobel-gold/10 rounded-full border border-nobel-gold/20 font-medium animate-fade-in-fast">
-              Excellence • Innovation • Leadership
-            </span>
+      <div className="section-container relative z-10">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+          <div className="lg:w-1/2 text-center lg:text-left">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight animate-fade-in">
+              Keeping Parents <span className="text-nobel-gold">Informed</span> After Every Class
+            </h1>
+            <p className="mt-6 text-xl text-gray-100 max-w-2xl animate-fade-in-fast">
+              EduTrack enables private schools to send detailed, personalized reports to parents after each class session, enhancing communication and student progress tracking.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in">
+              <Button size="lg" className="bg-nobel-gold text-nobel-navy hover:bg-nobel-gold/90">
+                Get Started
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10">
+                Request Demo
+              </Button>
+            </div>
           </div>
           
-          <h1 
-            className={cn(
-              "text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight text-shadow-lg transition-all transform duration-700 ease-out delay-300",
-              loaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-            )}
-          >
-            <span className="text-nobel-gold">Nurturing Brilliance,</span> Shaping Tomorrow's Leaders
-          </h1>
-          
-          <p 
-            className={cn(
-              "text-lg md:text-xl text-gray-200 mb-8 max-w-2xl mx-auto text-balance transition-all transform duration-700 ease-out delay-500",
-              loaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-            )}
-          >
-            At École du Savoir Nobel, we combine academic excellence with character development to prepare students for the challenges of a rapidly evolving world.
-          </p>
-          
-          <div 
-            className={cn(
-              "flex flex-col sm:flex-row gap-4 justify-center transition-all transform duration-700 ease-out delay-700",
-              loaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-            )}
-          >
-            <a 
-              href="#admissions" 
-              className="px-8 py-3 bg-nobel-gold text-nobel-navy font-medium rounded-md hover:bg-nobel-gold/90 transition-colors duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 transform transition-transform"
-            >
-              Apply Now
-            </a>
-            <a 
-              href="#programs" 
-              className="px-8 py-3 bg-transparent text-white border border-white/30 hover:bg-white/10 rounded-md font-medium transition-colors duration-300"
-            >
-              Explore Programs
-            </a>
+          <div className="lg:w-1/2 animate-fade-in-right">
+            <div className="relative rounded-lg overflow-hidden shadow-2xl">
+              <img 
+                src="https://images.unsplash.com/photo-1610484826967-09c5720778c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
+                alt="EduTrack Dashboard" 
+                className="w-full h-auto rounded-lg"
+              />
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-nobel-navy/70 to-transparent"></div>
+              
+              <div className="absolute bottom-4 left-4 right-4 text-white p-4 glass-morphism rounded-lg">
+                <h3 className="text-lg font-semibold">Easy-to-use interface</h3>
+                <p className="text-sm">Create detailed student reports in minutes</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       
-      {/* Scroll down indicator */}
-      <a 
-        href="#about" 
-        className={cn(
-          "absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white flex flex-col items-center justify-center z-20 transition-all duration-1000 ease-out delay-1000",
-          loaded ? "opacity-100" : "opacity-0"
-        )}
-      >
-        <span className="text-sm mb-2 text-gray-300">Discover More</span>
-        <ArrowDown className="h-5 w-5 animate-bounce" />
-      </a>
+      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent"></div>
     </section>
   );
 };
