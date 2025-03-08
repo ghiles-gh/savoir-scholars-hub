@@ -8,19 +8,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Plus, FileText, Clock, Calendar, User, Users, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ReportCreator from '@/components/ReportCreator';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
+  const { user, profile, signOut } = useAuth();
   const [isCreatingReport, setIsCreatingReport] = useState(false);
-  
-  const recentReports = [
-    { id: 1, studentName: 'Sophie Martin', className: 'Mathematics', date: '2023-09-15', status: 'sent' },
-    { id: 2, studentName: 'Alexandre Dubois', className: 'Physics', date: '2023-09-14', status: 'draft' },
-    { id: 3, studentName: 'Emma Leclerc', className: 'History', date: '2023-09-13', status: 'sent' },
-    { id: 4, studentName: 'Thomas Bernard', className: 'French', date: '2023-09-12', status: 'sent' },
-  ];
+  const [recentReports, setRecentReports] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const upcomingClasses = [
     { id: 1, className: 'Mathematics - Grade 10', time: '09:00 AM', date: '2023-09-20' },
@@ -29,21 +26,48 @@ const Dashboard = () => {
   ];
   
   useEffect(() => {
-    const userData = localStorage.getItem('edutrack_user');
-    if (!userData) {
+    if (!user) {
       navigate('/login');
       return;
     }
     
-    setUser(JSON.parse(userData));
-  }, [navigate]);
+    fetchReports();
+  }, [user, navigate]);
   
-  const handleLogout = () => {
-    localStorage.removeItem('edutrack_user');
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out",
-    });
+  const fetchReports = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('reports')
+        .select(`
+          id,
+          title,
+          report_date,
+          status,
+          students(name),
+          classes(name)
+        `)
+        .eq('teacher_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (error) throw error;
+      
+      setRecentReports(data || []);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+      toast({
+        title: "Failed to load reports",
+        description: "There was an error loading your reports. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleLogout = async () => {
+    await signOut();
     navigate('/login');
   };
   
@@ -51,7 +75,7 @@ const Dashboard = () => {
     setIsCreatingReport(true);
   };
   
-  if (!user) {
+  if (!user || !profile) {
     return <div>Loading...</div>;
   }
   
@@ -63,7 +87,7 @@ const Dashboard = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-nobel-navy">Teacher Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user.name}</p>
+            <p className="text-gray-600">Welcome back, {profile.name}</p>
           </div>
           
           <div className="flex gap-4">
@@ -144,40 +168,48 @@ const Dashboard = () => {
                     <CardDescription>View and manage your recent student reports</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left py-4 px-4 font-medium">Student</th>
-                            <th className="text-left py-4 px-4 font-medium">Class</th>
-                            <th className="text-left py-4 px-4 font-medium">Date</th>
-                            <th className="text-left py-4 px-4 font-medium">Status</th>
-                            <th className="text-right py-4 px-4 font-medium">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {recentReports.map((report) => (
-                            <tr key={report.id} className="border-b hover:bg-gray-50">
-                              <td className="py-4 px-4">{report.studentName}</td>
-                              <td className="py-4 px-4">{report.className}</td>
-                              <td className="py-4 px-4">{report.date}</td>
-                              <td className="py-4 px-4">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  report.status === 'sent' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {report.status === 'sent' ? 'Sent' : 'Draft'}
-                                </span>
-                              </td>
-                              <td className="py-4 px-4 text-right">
-                                <Button variant="outline" size="sm">View</Button>
-                              </td>
+                    {isLoading ? (
+                      <div className="py-8 text-center">Loading reports...</div>
+                    ) : recentReports.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-4 px-4 font-medium">Student</th>
+                              <th className="text-left py-4 px-4 font-medium">Class</th>
+                              <th className="text-left py-4 px-4 font-medium">Date</th>
+                              <th className="text-left py-4 px-4 font-medium">Status</th>
+                              <th className="text-right py-4 px-4 font-medium">Actions</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody>
+                            {recentReports.map((report: any) => (
+                              <tr key={report.id} className="border-b hover:bg-gray-50">
+                                <td className="py-4 px-4">{report.students?.name || 'Unknown'}</td>
+                                <td className="py-4 px-4">{report.classes?.name || 'Unknown'}</td>
+                                <td className="py-4 px-4">{report.report_date}</td>
+                                <td className="py-4 px-4">
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    report.status === 'sent' 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {report.status === 'sent' ? 'Sent' : 'Draft'}
+                                  </span>
+                                </td>
+                                <td className="py-4 px-4 text-right">
+                                  <Button variant="outline" size="sm">View</Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="py-8 text-center text-gray-500">
+                        No reports found. Create your first report!
+                      </div>
+                    )}
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Button variant="outline">View All Reports</Button>

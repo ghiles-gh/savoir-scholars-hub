@@ -6,7 +6,7 @@ import ReportCreatorHeader from './report/ReportCreatorHeader';
 import BasicDetailsTab from './report/BasicDetailsTab';
 import ReportContentTab from './report/ReportContentTab';
 import ReportPreviewTab from './report/ReportPreviewTab';
-import { useReportForm, getMockData } from './report/useReportForm';
+import { useReportForm, useFetchStudentsAndClasses, getMockData } from './report/useReportForm';
 
 interface ReportCreatorProps {
   onClose: () => void;
@@ -15,27 +15,48 @@ interface ReportCreatorProps {
 const ReportCreator: React.FC<ReportCreatorProps> = ({ onClose }) => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("details");
-  const { reportData, handleChange, handleSelectChange, handleArrayChange, addArrayItem, removeArrayItem } = useReportForm();
-  const { students, classes } = getMockData();
+  const { reportData, handleChange, handleSelectChange, handleArrayChange, addArrayItem, removeArrayItem, saveReport } = useReportForm();
   
-  const handleSaveDraft = () => {
-    // Here you would save the report to your database
-    toast({
-      title: "Report saved",
-      description: "Your report has been saved as a draft",
-    });
-    
-    onClose();
+  // Fetch real data from Supabase, but fallback to mock data if needed
+  const { students: realStudents, classes: realClasses, isLoading, isError } = useFetchStudentsAndClasses();
+  const mockData = getMockData();
+  
+  // Use real data if available, otherwise use mock data
+  const students = realStudents.length > 0 ? realStudents : mockData.students.map(name => ({ id: name, name }));
+  const classes = realClasses.length > 0 ? realClasses : mockData.classes.map(name => ({ id: name, name }));
+  
+  const handleSaveDraft = async () => {
+    try {
+      await saveReport('draft');
+      toast({
+        title: "Report saved",
+        description: "Your report has been saved as a draft",
+      });
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: "Error saving report",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
   
-  const handleSendReport = () => {
-    // Here you would send the report to parents
-    toast({
-      title: "Report sent",
-      description: "Your report has been sent to the student's parents",
-    });
-    
-    onClose();
+  const handleSendReport = async () => {
+    try {
+      await saveReport('sent');
+      toast({
+        title: "Report sent",
+        description: "Your report has been sent to the student's parents",
+      });
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: "Error sending report",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
   
   const nextTab = () => {
@@ -74,6 +95,7 @@ const ReportCreator: React.FC<ReportCreatorProps> = ({ onClose }) => {
               nextTab={nextTab}
               students={students}
               classes={classes}
+              isLoading={isLoading}
             />
           </TabsContent>
           
@@ -95,6 +117,8 @@ const ReportCreator: React.FC<ReportCreatorProps> = ({ onClose }) => {
               handleSaveDraft={handleSaveDraft}
               handleSendReport={handleSendReport}
               prevTab={prevTab}
+              studentName={students.find(s => s.id === reportData.student)?.name || ''}
+              className={classes.find(c => c.id === reportData.class)?.name || ''}
             />
           </TabsContent>
         </div>

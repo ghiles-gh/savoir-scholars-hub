@@ -6,6 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+interface Student {
+  id: string;
+  name: string;
+}
+
+interface Class {
+  id: string;
+  name: string;
+}
+
 interface BasicDetailsTabProps {
   reportData: {
     student: string;
@@ -16,8 +26,9 @@ interface BasicDetailsTabProps {
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
   nextTab: () => void;
-  students: string[];
-  classes: string[];
+  students: Student[];
+  classes: Class[];
+  isLoading?: boolean;
 }
 
 const BasicDetailsTab: React.FC<BasicDetailsTabProps> = ({ 
@@ -26,7 +37,8 @@ const BasicDetailsTab: React.FC<BasicDetailsTabProps> = ({
   handleSelectChange,
   nextTab,
   students,
-  classes
+  classes,
+  isLoading = false
 }) => {
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -36,14 +48,15 @@ const BasicDetailsTab: React.FC<BasicDetailsTabProps> = ({
           <Select 
             value={reportData.student} 
             onValueChange={(value) => handleSelectChange("student", value)}
+            disabled={isLoading}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select a student" />
+              <SelectValue placeholder={isLoading ? "Loading students..." : "Select a student"} />
             </SelectTrigger>
             <SelectContent>
               {students.map(student => (
-                <SelectItem key={student} value={student}>
-                  {student}
+                <SelectItem key={student.id} value={student.id}>
+                  {student.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -55,14 +68,15 @@ const BasicDetailsTab: React.FC<BasicDetailsTabProps> = ({
           <Select 
             value={reportData.class} 
             onValueChange={(value) => handleSelectChange("class", value)}
+            disabled={isLoading}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select a class" />
+              <SelectValue placeholder={isLoading ? "Loading classes..." : "Select a class"} />
             </SelectTrigger>
             <SelectContent>
               {classes.map(cls => (
-                <SelectItem key={cls} value={cls}>
-                  {cls}
+                <SelectItem key={cls.id} value={cls.id}>
+                  {cls.name}
                 </SelectItem>
               ))}
             </SelectContent>

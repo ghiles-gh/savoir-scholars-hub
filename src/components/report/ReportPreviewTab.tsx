@@ -23,13 +23,17 @@ interface ReportPreviewTabProps {
   handleSaveDraft: () => void;
   handleSendReport: () => void;
   prevTab: () => void;
+  studentName: string;
+  className: string;
 }
 
 const ReportPreviewTab: React.FC<ReportPreviewTabProps> = ({ 
   reportData, 
   handleSaveDraft, 
   handleSendReport,
-  prevTab
+  prevTab,
+  studentName,
+  className
 }) => {
   return (
     <div className="max-w-3xl mx-auto">
@@ -42,11 +46,11 @@ const ReportPreviewTab: React.FC<ReportPreviewTabProps> = ({
           <div className="grid grid-cols-2 gap-4 pb-4 border-b">
             <div>
               <p className="text-sm font-medium text-gray-500">Student</p>
-              <p className="font-medium">{reportData.student || "Not specified"}</p>
+              <p className="font-medium">{studentName || "Not specified"}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Class</p>
-              <p className="font-medium">{reportData.class || "Not specified"}</p>
+              <p className="font-medium">{className || "Not specified"}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Date</p>

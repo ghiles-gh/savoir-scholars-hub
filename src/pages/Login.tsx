@@ -9,15 +9,16 @@ import { Eye, EyeOff, Mail, Lock, UserPlus } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, signIn, signUp, isLoading } = useAuth();
   
   // Form states
   const [loginData, setLoginData] = useState({ email: '', password: '' });
@@ -31,11 +32,10 @@ const Login = () => {
   
   // Check if user is already logged in
   useEffect(() => {
-    const userData = localStorage.getItem('edutrack_user');
-    if (userData) {
+    if (user) {
       navigate('/dashboard');
     }
-  }, [navigate]);
+  }, [user, navigate]);
   
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,9 +47,8 @@ const Login = () => {
     setRegisterData(prev => ({ ...prev, [name]: value }));
   };
   
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
     // Simple validation
     if (!loginData.email || !loginData.password) {
@@ -58,35 +57,20 @@ const Login = () => {
         description: "Please fill in all fields",
         variant: "destructive"
       });
-      setIsLoading(false);
       return;
     }
     
-    // Simulate login delay
-    setTimeout(() => {
-      // For demo purposes - normally would validate with a server
-      const mockUser = {
-        id: '1',
-        name: 'Teacher User',
-        email: loginData.email,
-        role: 'teacher'
-      };
-      
-      localStorage.setItem('edutrack_user', JSON.stringify(mockUser));
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome back to EduTrack!"
-      });
-      
+    try {
+      await signIn(loginData.email, loginData.password);
       navigate('/dashboard');
-      setIsLoading(false);
-    }, 1500);
+    } catch (error) {
+      // Error is handled in the auth context
+      console.error(error);
+    }
   };
   
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
     // Simple validation
     if (!registerData.name || !registerData.email || !registerData.password || !registerData.confirmPassword || !registerData.schoolName) {
@@ -95,7 +79,6 @@ const Login = () => {
         description: "Please fill in all fields",
         variant: "destructive"
       });
-      setIsLoading(false);
       return;
     }
     
@@ -105,31 +88,21 @@ const Login = () => {
         description: "Please make sure your passwords match",
         variant: "destructive"
       });
-      setIsLoading(false);
       return;
     }
     
-    // Simulate registration delay
-    setTimeout(() => {
-      // For demo purposes - normally would register with a server
-      const mockUser = {
-        id: '1',
+    try {
+      await signUp(registerData.email, registerData.password, {
         name: registerData.name,
-        email: registerData.email,
         role: 'teacher',
         schoolName: registerData.schoolName
-      };
-      
-      localStorage.setItem('edutrack_user', JSON.stringify(mockUser));
-      
-      toast({
-        title: "Registration successful",
-        description: "Welcome to EduTrack! Your account has been created."
       });
       
-      navigate('/dashboard');
-      setIsLoading(false);
-    }, 1500);
+      // Navigate is not needed here as the AuthContext will handle the redirect on successful auth state change
+    } catch (error) {
+      // Error is handled in the auth context
+      console.error(error);
+    }
   };
   
   return (

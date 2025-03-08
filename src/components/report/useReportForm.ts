@@ -1,5 +1,8 @@
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface ReportContentItem {
   id: number;
@@ -18,6 +21,7 @@ export interface ReportData {
 }
 
 export const useReportForm = () => {
+  const { user } = useAuth();
   const [reportData, setReportData] = useState<ReportData>({
     student: "",
     class: "",
@@ -69,6 +73,36 @@ export const useReportForm = () => {
       [arrayName]: reportData[arrayName].filter(item => item.id !== id)
     });
   };
+
+  const saveReport = async (status: 'draft' | 'sent' = 'draft') => {
+    if (!user) throw new Error('User not authenticated');
+    
+    const content = {
+      overview: reportData.overview,
+      achievements: reportData.achievements,
+      improvements: reportData.improvements,
+      nextSteps: reportData.nextSteps,
+      additionalNotes: reportData.additionalNotes
+    };
+
+    const reportTitle = `Report for ${reportData.student} - ${reportData.class}`;
+
+    const { data, error } = await supabase
+      .from('reports')
+      .insert({
+        title: reportTitle,
+        student_id: reportData.student,
+        teacher_id: user.id,
+        class_id: reportData.class,
+        report_date: reportData.date,
+        status: status,
+        content: content
+      })
+      .select();
+
+    if (error) throw error;
+    return data;
+  };
   
   return {
     reportData,
@@ -76,12 +110,59 @@ export const useReportForm = () => {
     handleSelectChange,
     handleArrayChange,
     addArrayItem,
-    removeArrayItem
+    removeArrayItem,
+    saveReport
   };
 };
 
+export const useFetchStudentsAndClasses = () => {
+  const { user } = useAuth();
+
+  const fetchStudents = async () => {
+    if (!user) return [];
+    
+    const { data, error } = await supabase
+      .from('students')
+      .select('id, name');
+    
+    if (error) throw error;
+    return data || [];
+  };
+
+  const fetchClasses = async () => {
+    if (!user) return [];
+    
+    const { data, error } = await supabase
+      .from('classes')
+      .select('id, name')
+      .eq('teacher_id', user.id);
+    
+    if (error) throw error;
+    return data || [];
+  };
+
+  const studentsQuery = useQuery({
+    queryKey: ['students', user?.id],
+    queryFn: fetchStudents,
+    enabled: !!user
+  });
+
+  const classesQuery = useQuery({
+    queryKey: ['classes', user?.id],
+    queryFn: fetchClasses,
+    enabled: !!user
+  });
+
+  return {
+    students: studentsQuery.data || [],
+    classes: classesQuery.data || [],
+    isLoading: studentsQuery.isLoading || classesQuery.isLoading,
+    isError: studentsQuery.isError || classesQuery.isError
+  };
+};
+
+// Fallback mock data if no real data is available yet
 export const getMockData = () => {
-  // Mock data for demonstration
   const students = [
     "Sophie Martin", "Alexandre Dubois", "Emma Leclerc", "Thomas Bernard", 
     "Louise Petit", "Gabriel Moreau", "Camille Leroy", "Lucas Roux"
