@@ -29,13 +29,13 @@ const ReportCreator: React.FC<ReportCreatorProps> = ({ onClose }) => {
     try {
       await saveReport('draft');
       toast({
-        title: "Rapport enregistré",
-        description: "Votre rapport a été enregistré comme brouillon",
+        title: "Report saved",
+        description: "Your report has been saved as a draft",
       });
       onClose();
     } catch (error: any) {
       toast({
-        title: "Erreur d'enregistrement du rapport",
+        title: "Error saving report",
         description: error.message,
         variant: "destructive"
       });
@@ -46,13 +46,13 @@ const ReportCreator: React.FC<ReportCreatorProps> = ({ onClose }) => {
     try {
       await saveReport('sent');
       toast({
-        title: "Rapport envoyé",
-        description: "Votre rapport a été envoyé aux parents de l'élève",
+        title: "Report sent",
+        description: "Your report has been sent to the student's parents",
       });
       onClose();
     } catch (error: any) {
       toast({
-        title: "Erreur d'envoi du rapport",
+        title: "Error sending report",
         description: error.message,
         variant: "destructive"
       });
@@ -80,9 +80,9 @@ const ReportCreator: React.FC<ReportCreatorProps> = ({ onClose }) => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="px-6 border-b">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="details">1. Détails de base</TabsTrigger>
-            <TabsTrigger value="content">2. Contenu du rapport</TabsTrigger>
-            <TabsTrigger value="preview">3. Aperçu & Envoi</TabsTrigger>
+            <TabsTrigger value="details">1. Basic Details</TabsTrigger>
+            <TabsTrigger value="content">2. Report Content</TabsTrigger>
+            <TabsTrigger value="preview">3. Preview & Send</TabsTrigger>
           </TabsList>
         </div>
         
