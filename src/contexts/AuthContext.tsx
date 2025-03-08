@@ -12,6 +12,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: any) => Promise<void>;
   signOut: () => Promise<void>;
+  updateProfile: (profileData: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -80,8 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Handle specific error cases
         if (error.message.includes('Email not confirmed')) {
           toast({
-            title: "Email not confirmed",
-            description: "Please check your inbox and confirm your email before logging in.",
+            title: "Email non confirmé",
+            description: "Veuillez vérifier votre boîte de réception et confirmer votre email avant de vous connecter.",
             variant: "destructive"
           });
         } else {
@@ -89,13 +90,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } else if (data.user) {
         toast({
-          title: "Login successful",
-          description: "Welcome back to EduTrack!"
+          title: "Connexion réussie",
+          description: "Bienvenue sur EduTrack!"
         });
       }
     } catch (error: any) {
       toast({
-        title: "Login failed",
+        title: "Échec de la connexion",
         description: error.message,
         variant: "destructive"
       });
@@ -114,8 +115,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         options: {
           data: {
             name: userData.name,
-            role: userData.role || 'teacher',
-            schoolName: userData.schoolName
+            profile_type: userData.profile_type || 'teacher',
+            schoolName: userData.schoolName,
+            phone_number: userData.phone_number
           },
           emailRedirectTo: window.location.origin + '/login'
         }
@@ -127,21 +129,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.user?.identities?.length === 0) {
         toast({
-          title: "Account already exists",
-          description: "An account with this email already exists. Please log in instead.",
+          title: "Compte déjà existant",
+          description: "Un compte avec cet email existe déjà. Veuillez vous connecter.",
           variant: "destructive"
         });
         return;
       }
 
+      // If this is a parent registration with child data, create the student record
+      if (userData.profile_type === 'parent' && userData.childData && data.user) {
+        const { name: childName, grade } = userData.childData;
+        
+        const { error: studentError } = await supabase
+          .from('students')
+          .insert({
+            name: childName,
+            grade: grade || '6',
+            parent_id: data.user.id
+          });
+            
+        if (studentError) {
+          console.error('Error creating student record:', studentError);
+          toast({
+            title: "Erreur d'enregistrement de l'étudiant",
+            description: studentError.message,
+            variant: "destructive"
+          });
+        }
+      }
+
       toast({
-        title: "Registration successful",
-        description: "Please check your email to confirm your account before logging in."
+        title: "Inscription réussie",
+        description: "Veuillez vérifier votre email pour confirmer votre compte avant de vous connecter."
       });
       
     } catch (error: any) {
       toast({
-        title: "Registration failed",
+        title: "Échec de l'inscription",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateProfile = async (profileData: any) => {
+    if (!user) {
+      throw new Error('Utilisateur non authentifié');
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      // Refresh profile data
+      await fetchProfile(user.id);
+      
+      toast({
+        title: "Profil mis à jour",
+        description: "Vos informations ont été mises à jour avec succès."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur de mise à jour",
         description: error.message,
         variant: "destructive"
       });
@@ -156,12 +214,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       await supabase.auth.signOut();
       toast({
-        title: "Logged out",
-        description: "You have been successfully logged out"
+        title: "Déconnecté",
+        description: "Vous avez été déconnecté avec succès"
       });
     } catch (error: any) {
       toast({
-        title: "Error signing out",
+        title: "Erreur de déconnexion",
         description: error.message,
         variant: "destructive"
       });
@@ -177,7 +235,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     signIn,
     signUp,
-    signOut
+    signOut,
+    updateProfile
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

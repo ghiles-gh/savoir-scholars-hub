@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,7 +75,7 @@ export const useReportForm = () => {
   };
 
   const saveReport = async (status: 'draft' | 'sent' = 'draft') => {
-    if (!user) throw new Error('User not authenticated');
+    if (!user) throw new Error('Utilisateur non authentifié');
     
     const achievementsContent = reportData.achievements.map(item => item.content).filter(content => content.trim() !== '');
     const improvementsContent = reportData.improvements.map(item => item.content).filter(content => content.trim() !== '');
@@ -87,7 +88,7 @@ export const useReportForm = () => {
       additionalNotes: reportData.additionalNotes
     };
 
-    const reportTitle = `Report for ${reportData.student} - ${reportData.class}`;
+    const reportTitle = `Rapport pour ${reportData.student} - ${reportData.class}`;
 
     const { data, error } = await supabase
       .from('reports')
@@ -98,7 +99,7 @@ export const useReportForm = () => {
         class_id: reportData.class,
         report_date: reportData.date,
         status: status,
-        content: content
+        content
       })
       .select();
 
@@ -170,8 +171,8 @@ export const getMockData = () => {
   ];
   
   const classes = [
-    "Mathematics - Grade 10", "Physics - Grade 11", "History - Grade 9", 
-    "French - Grade 10", "Biology - Grade 11", "Chemistry - Grade 11"
+    "Mathématiques - 5ème", "Physique - 4ème", "Histoire - 6ème", 
+    "Français - 5ème", "Biologie - 4ème", "Chimie - 4ème"
   ];
   
   return {
