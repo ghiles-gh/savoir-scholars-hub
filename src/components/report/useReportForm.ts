@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,22 +88,54 @@ export const useReportForm = () => {
       additionalNotes: reportData.additionalNotes
     };
 
-    const reportTitle = `Report for ${reportData.student} - ${reportData.class}`;
+    // Find the corresponding student and class records
+    const studentId = reportData.student;
+    const classId = reportData.class;
+    
+    // Generate report title using actual names, not IDs
+    const { data: students } = await supabase
+      .from('students')
+      .select('name')
+      .eq('id', studentId)
+      .single();
+      
+    const { data: classData } = await supabase
+      .from('classes')
+      .select('name')
+      .eq('id', classId)
+      .single();
+    
+    const studentName = students?.name || 'Unknown Student';
+    const className = classData?.name || 'Unknown Class';
+    const reportTitle = `Report for ${studentName} - ${className}`;
+
+    console.log("Saving report with data:", {
+      title: reportTitle,
+      student_id: studentId,
+      teacher_id: user.id,
+      class_id: classId,
+      report_date: reportData.date,
+      status: status,
+      content: content
+    });
 
     const { data, error } = await supabase
       .from('reports')
       .insert({
         title: reportTitle,
-        student_id: reportData.student,
+        student_id: studentId,
         teacher_id: user.id,
-        class_id: reportData.class,
+        class_id: classId,
         report_date: reportData.date,
         status: status,
         content: content
       })
       .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error saving report:", error);
+      throw error;
+    }
     return data;
   };
   

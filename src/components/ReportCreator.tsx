@@ -56,6 +56,7 @@ const ReportCreator: React.FC<ReportCreatorProps> = ({ onClose }) => {
         description: error.message,
         variant: "destructive"
       });
+      console.error("Send report error details:", error);
     }
   };
   
