@@ -29,6 +29,17 @@ const Login = () => {
     confirmPassword: '',
     schoolName: ''
   });
+
+  // Check if email confirmation message is in URL
+  useEffect(() => {
+    const message = searchParams.get('message');
+    if (message === 'email-confirmed') {
+      toast({
+        title: "Email confirmed",
+        description: "Your email has been confirmed. You can now login.",
+      });
+    }
+  }, [searchParams, toast]);
   
   // Check if user is already logged in
   useEffect(() => {
@@ -62,7 +73,7 @@ const Login = () => {
     
     try {
       await signIn(loginData.email, loginData.password);
-      navigate('/dashboard');
+      // Navigation is handled in the auth context through useEffect
     } catch (error) {
       // Error is handled in the auth context
       console.error(error);
@@ -98,7 +109,16 @@ const Login = () => {
         schoolName: registerData.schoolName
       });
       
-      // Navigate is not needed here as the AuthContext will handle the redirect on successful auth state change
+      // After signup, switch to login tab
+      setActiveTab('login');
+      // Clear the registration form
+      setRegisterData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        schoolName: ''
+      });
     } catch (error) {
       // Error is handled in the auth context
       console.error(error);

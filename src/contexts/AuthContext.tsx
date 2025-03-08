@@ -74,17 +74,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
-        throw error;
+        // Handle specific error cases
+        if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "Email not confirmed",
+            description: "Please check your inbox and confirm your email before logging in.",
+            variant: "destructive"
+          });
+        } else {
+          throw error;
+        }
+      } else if (data.user) {
+        toast({
+          title: "Login successful",
+          description: "Welcome back to EduTrack!"
+        });
       }
-
-      toast({
-        title: "Login successful",
-        description: "Welcome back to EduTrack!"
-      });
-
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -100,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, userData: any) => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -108,7 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: userData.name,
             role: userData.role || 'teacher',
             schoolName: userData.schoolName
-          }
+          },
+          emailRedirectTo: window.location.origin + '/login'
         }
       });
 
@@ -116,9 +125,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
 
+      if (data.user?.identities?.length === 0) {
+        toast({
+          title: "Account already exists",
+          description: "An account with this email already exists. Please log in instead.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       toast({
         title: "Registration successful",
-        description: "Welcome to EduTrack! Your account has been created."
+        description: "Please check your email to confirm your account before logging in."
       });
       
     } catch (error: any) {
