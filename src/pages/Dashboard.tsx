@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -6,7 +5,7 @@ import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, FileText, Clock, Calendar, User, Users, LogOut, Settings } from "lucide-react";
+import { Plus, FileText, Clock, Calendar, User, Users, LogOut, Settings, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ReportCreator from '@/components/ReportCreator';
 import { useAuth } from '@/contexts/AuthContext';
@@ -101,7 +100,6 @@ const Dashboard = () => {
   const fetchParentReports = async () => {
     try {
       setIsLoading(true);
-      // First get all children IDs
       const { data: childrenData, error: childrenError } = await supabase
         .from('students')
         .select('id')
@@ -116,7 +114,6 @@ const Dashboard = () => {
       
       const childrenIds = childrenData.map(child => child.id);
       
-      // Now fetch reports for all children
       const { data, error } = await supabase
         .from('reports')
         .select(`
@@ -147,7 +144,6 @@ const Dashboard = () => {
   };
 
   const fetchSchoolStats = async () => {
-    // This would fetch school statistics if implemented
     setIsLoading(false);
   };
   
@@ -220,7 +216,6 @@ const Dashboard = () => {
           <ReportCreator onClose={() => setIsCreatingReport(false)} />
         ) : (
           <>
-            {/* Teacher Dashboard */}
             {profile.profile_type === 'teacher' && (
               <>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -362,7 +357,6 @@ const Dashboard = () => {
               </>
             )}
 
-            {/* Parent Dashboard */}
             {profile.profile_type === 'parent' && (
               <>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -460,7 +454,6 @@ const Dashboard = () => {
               </>
             )}
 
-            {/* School Dashboard */}
             {profile.profile_type === 'school' && (
               <>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -470,7 +463,7 @@ const Dashboard = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center">
-                        <GraduationCap className="w-8 h-8 text-nobel-blue mr-4" />
+                        <BookOpen className="w-8 h-8 text-nobel-blue mr-4" />
                         <span className="text-3xl font-bold">42</span>
                       </div>
                       <p className="text-sm text-gray-500 mt-2">8 nouveaux ce mois-ci</p>
