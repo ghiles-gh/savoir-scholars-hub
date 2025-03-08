@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -77,10 +76,13 @@ export const useReportForm = () => {
   const saveReport = async (status: 'draft' | 'sent' = 'draft') => {
     if (!user) throw new Error('User not authenticated');
     
+    const achievementsContent = reportData.achievements.map(item => item.content).filter(content => content.trim() !== '');
+    const improvementsContent = reportData.improvements.map(item => item.content).filter(content => content.trim() !== '');
+    
     const content = {
       overview: reportData.overview,
-      achievements: reportData.achievements,
-      improvements: reportData.improvements,
+      achievements: achievementsContent,
+      improvements: improvementsContent,
       nextSteps: reportData.nextSteps,
       additionalNotes: reportData.additionalNotes
     };
@@ -161,7 +163,6 @@ export const useFetchStudentsAndClasses = () => {
   };
 };
 
-// Fallback mock data if no real data is available yet
 export const getMockData = () => {
   const students = [
     "Sophie Martin", "Alexandre Dubois", "Emma Leclerc", "Thomas Bernard", 
